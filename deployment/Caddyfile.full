@@ -1,0 +1,27 @@
+{
+    admin off
+}
+{$APP_DOMAIN} {
+    header -Server
+    request_body {
+        max_size 1MB
+    }
+    reverse_proxy app:8000
+}
+{$CRM_DOMAIN} {
+    header -Server
+    # Bootstrap gate: prevents an unauthenticated first visitor claiming ownership.
+    # Remove after completing owner setup and disabling public registration in Twenty.
+    basic_auth {
+        {$CRM_GATE_USER} {$CRM_GATE_HASH}
+    }
+    reverse_proxy twenty-server:3000
+}
+
+{$MAINTENANCE_DOMAIN} {
+    request_body {
+        max_size 250KB
+    }
+    reverse_proxy maintenance:8010
+    header Strict-Transport-Security "max-age=31536000"
+}

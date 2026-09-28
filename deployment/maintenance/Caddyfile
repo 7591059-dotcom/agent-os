@@ -1,0 +1,12 @@
+{$APP_DOMAIN} {
+    encode
+    reverse_proxy app:8000
+    header Strict-Transport-Security "max-age=31536000"
+}
+{$MAINTENANCE_DOMAIN} {
+    request_body {
+        max_size 250KB
+    }
+    reverse_proxy maintenance:8010
+    header Strict-Transport-Security "max-age=31536000"
+}

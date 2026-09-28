@@ -1,0 +1,12 @@
+{
+	admin off
+}
+
+{$APP_DOMAIN} {
+	encode zstd gzip
+	header -Server
+	request_body {
+		max_size 1MB
+	}
+	reverse_proxy app:8000
+}

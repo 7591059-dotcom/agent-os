@@ -1,0 +1,4 @@
+services:
+  caddy:
+    volumes:
+      - ./deployment/Caddyfile.full:/etc/caddy/Caddyfile:ro

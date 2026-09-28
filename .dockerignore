@@ -1,0 +1,15 @@
+*
+!requirements.txt
+!app/
+!app/**
+!scripts/
+!scripts/**
+!services/
+!services/maintenance/
+!services/maintenance/app.py
+!services/maintenance/Dockerfile
+**/__pycache__/
+**/*.pyc
+**/.env*
+**/*.key
+**/*.pem

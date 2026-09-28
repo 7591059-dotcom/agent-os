@@ -1,0 +1,34 @@
+services:
+  maintenance:
+    build:
+      context: .
+      dockerfile: services/maintenance/Dockerfile
+    restart: unless-stopped
+    user: "10002:10002"
+    read_only: true
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    environment:
+      MAINTENANCE_TOKEN: ${MAINTENANCE_TOKEN:?Generate a separate 32-byte secret}
+      SOURCE_ROOT: /source
+      PROPOSAL_ROOT: /proposals
+      MAINTENANCE_ORIGIN: https://${MAINTENANCE_DOMAIN:?Set MCP domain}
+    volumes:
+      - ./app:/source/app:ro
+      - ./docs:/source/docs:ro
+      - ./tests:/source/tests:ro
+      - ./scripts:/source/scripts:ro
+      - ./README.md:/source/README.md:ro
+      - proposals:/proposals
+    expose: ["8010"]
+    tmpfs: [/tmp:size=16m,noexec,nosuid,nodev]
+    mem_limit: 256m
+    cpus: 0.5
+    pids_limit: 32
+  caddy:
+    environment:
+      MAINTENANCE_DOMAIN: ${MAINTENANCE_DOMAIN:?Set MCP domain}
+    volumes:
+      - ./deployment/maintenance/Caddyfile:/etc/caddy/Caddyfile:ro
+volumes:
+  proposals:

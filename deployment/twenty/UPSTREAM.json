@@ -1,0 +1,16 @@
+{
+  "tag": "twenty/v2.38.1",
+  "retrieved_at": "2026-09-25",
+  "files": [
+    {
+      "file": "upstream-compose.yaml",
+      "url": "https://raw.githubusercontent.com/twentyhq/twenty/twenty/v2.38.1/packages/twenty-docker/docker-compose.yml",
+      "sha256": "8f81c8084c787d1f0e9e7b59961785302dd01a87f3c7290a1f42683af5af03c5"
+    },
+    {
+      "file": "UPSTREAM-LICENSE",
+      "url": "https://raw.githubusercontent.com/twentyhq/twenty/twenty/v2.38.1/LICENSE",
+      "sha256": "375d724003121160f2888cb3019378bff4336f470c5feab568d8f4e816d2c745"
+    }
+  ]
+}

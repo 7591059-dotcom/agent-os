@@ -1,0 +1,6 @@
+{
+  "name": "agentnaya-ui-checks",
+  "private": true,
+  "scripts": {"test:ui": "node tests/ui-smoke.cjs"},
+  "devDependencies": {"jsdom": "30.0.1"}
+}

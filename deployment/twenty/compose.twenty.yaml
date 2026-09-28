@@ -1,0 +1,107 @@
+# Adapted from the pinned official Twenty Compose; see UPSTREAM.json.
+services:
+  twenty-server:
+    image: twentycrm/twenty:v2.38.1
+    volumes:
+    - twenty-server-local-data:/app/packages/twenty-server/.local-storage
+    environment:
+      NODE_PORT: 3000
+      PG_DATABASE_URL: postgres://postgres:${TWENTY_DB_PASSWORD:?Set Twenty DB password}@twenty-db:5432/twenty
+      SERVER_URL: https://${CRM_DOMAIN:?Set CRM domain}
+      REDIS_URL: redis://twenty-redis:6379
+      DISABLE_DB_MIGRATIONS: 'false'
+      DISABLE_CRON_JOBS_REGISTRATION: 'false'
+      STORAGE_TYPE: local
+      ENCRYPTION_KEY: ${TWENTY_ENCRYPTION_KEY:?Set Twenty encryption key}
+      APP_SECRET: ${TWENTY_APP_SECRET:?Set Twenty app secret}
+    depends_on:
+      twenty-db:
+        condition: service_healthy
+      twenty-redis:
+        condition: service_healthy
+    healthcheck:
+      test: curl --fail http://localhost:3000/healthz
+      interval: 5s
+      timeout: 5s
+      retries: 20
+    restart: unless-stopped
+    security_opt:
+    - no-new-privileges:true
+    pids_limit: 256
+    mem_limit: 2g
+    cpus: 1.5
+  twenty-worker:
+    image: twentycrm/twenty:v2.38.1
+    volumes:
+    - twenty-server-local-data:/app/packages/twenty-server/.local-storage
+    command:
+    - yarn
+    - worker:prod
+    environment:
+      PG_DATABASE_URL: postgres://postgres:${TWENTY_DB_PASSWORD:?Set Twenty DB password}@twenty-db:5432/twenty
+      SERVER_URL: https://${CRM_DOMAIN:?Set CRM domain}
+      REDIS_URL: redis://twenty-redis:6379
+      DISABLE_DB_MIGRATIONS: 'true'
+      DISABLE_CRON_JOBS_REGISTRATION: 'true'
+      STORAGE_TYPE: local
+      ENCRYPTION_KEY: ${TWENTY_ENCRYPTION_KEY:?Set Twenty encryption key}
+      APP_SECRET: ${TWENTY_APP_SECRET:?Set Twenty app secret}
+    depends_on:
+      twenty-db:
+        condition: service_healthy
+      twenty-server:
+        condition: service_healthy
+    restart: unless-stopped
+    security_opt:
+    - no-new-privileges:true
+    pids_limit: 256
+    mem_limit: 2g
+    cpus: 1.5
+  twenty-db:
+    image: postgres:16
+    volumes:
+    - twenty-db-data:/var/lib/postgresql/data
+    environment:
+      POSTGRES_DB: twenty
+      POSTGRES_PASSWORD: ${TWENTY_DB_PASSWORD:?Set Twenty DB password}
+      POSTGRES_USER: postgres
+    healthcheck:
+      test:
+      - CMD-SHELL
+      - pg_isready -U postgres -d twenty
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    restart: unless-stopped
+    security_opt:
+    - no-new-privileges:true
+    pids_limit: 256
+    mem_limit: 1g
+  twenty-redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    command:
+    - --maxmemory-policy
+    - noeviction
+    healthcheck:
+      test:
+      - CMD
+      - redis-cli
+      - ping
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    security_opt:
+    - no-new-privileges:true
+    pids_limit: 256
+    mem_limit: 512m
+  caddy:
+    environment:
+      CRM_DOMAIN: ${CRM_DOMAIN:?Set CRM domain}
+      CRM_GATE_USER: ${CRM_GATE_USER:?Set temporary CRM gate user}
+      CRM_GATE_HASH: ${CRM_GATE_HASH:?Set temporary CRM gate hash}
+    volumes:
+    - ./deployment/twenty/Caddyfile:/etc/caddy/Caddyfile:ro
+volumes:
+  twenty-db-data: {}
+  twenty-server-local-data: {}
